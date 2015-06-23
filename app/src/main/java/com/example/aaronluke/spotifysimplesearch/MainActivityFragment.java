@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
 import retrofit.Callback;
 import retrofit.client.Response;
 import retrofit.RetrofitError;
@@ -42,7 +43,7 @@ public class MainActivityFragment extends Fragment {
         List<String> listOfNumbers = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.temp_list_items)));
 
         // TODO: will need to load this with artists
-        performArtistSearch("Keith Green");
+        performArtistSearch("Keith");
 
         // populating adapter with current activity, layout ID, id of textview, and the string data
         mArtistAdapter =
@@ -69,17 +70,30 @@ public class MainActivityFragment extends Fragment {
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
 
-        spotify.getArtist(query, new Callback<Artist>() {
+        spotify.searchArtists(query, new Callback<ArtistsPager>() {
             @Override
-            public void success(Artist artist, Response response) {
-                Log.d("artist success", artist.name);
+            public void success(ArtistsPager artistsPager, Response response) {
+
+                // grab all artists that match
+                List<Artist> listOfArtists = artistsPager.artists.items;
+
+                for(Artist element : listOfArtists){
+                    String name = element.name;
+                    Log.d("Name", name);
+                }
+
+                //Log.d("artist success", artistsPager.toString());
             }
+
             @Override
             public void failure(RetrofitError error) {
                 Log.d("artist failure", error.toString());
             }
         });
     }
+
+    // TODO: At some point I need to implement a call back for the text editor
+    // onEditorActionListener(new TextView.OnEditorActionListener()
 
 
 }
