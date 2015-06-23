@@ -36,14 +36,9 @@ public class MainActivityFragment extends Fragment {
         // Adapter to tie the data to the listview
         ArrayAdapter<String> mArtistAdapter;
 
-        // getting pointer to resources- will pull strings, views from this
-        Resources res = getResources();
-
-        // creating string list based on temp_list_items out of strings.xml
-        List<String> listOfNumbers = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.temp_list_items)));
-
-        // TODO: will need to load this with artists
-        performArtistSearch("Keith");
+        // Static Lookup for Artist Name
+        List<String> artistList= Arrays.asList("No Matching Artist");
+        artistList= performArtistSearch("Keith");
 
         // populating adapter with current activity, layout ID, id of textview, and the string data
         mArtistAdapter =
@@ -51,7 +46,7 @@ public class MainActivityFragment extends Fragment {
                         getActivity(),
                         R.layout.artist_list,
                         R.id.artist_list_text_view,
-                        listOfNumbers);
+                        artistList);
 
         // grabbing rootView to manipulate
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -65,10 +60,16 @@ public class MainActivityFragment extends Fragment {
     }
 
     // method to search for Artist
-    private void performArtistSearch (String query) {
+    private List<String> performArtistSearch (String query) {
 
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
+
+        // getting pointer to resources- will pull strings, views from this
+        Resources res = getResources();
+
+        // creating string list based on temp_list_items out of strings.xml for the moment
+        List<String> listofArtists = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.temp_list_items)));
 
         spotify.searchArtists(query, new Callback<ArtistsPager>() {
             @Override
@@ -78,18 +79,22 @@ public class MainActivityFragment extends Fragment {
                 List<Artist> listOfArtists = artistsPager.artists.items;
 
                 for(Artist element : listOfArtists){
-                    String name = element.name;
+                    listofArtists[element]= = element.name;
                     Log.d("Name", name);
                 }
 
-                //Log.d("artist success", artistsPager.toString());
+                Log.d("artist success", artistsPager.toString());
+
             }
 
             @Override
             public void failure(RetrofitError error) {
                 Log.d("artist failure", error.toString());
+
             }
         });
+
+        return listofArtists;
     }
 
     // TODO: At some point I need to implement a call back for the text editor
