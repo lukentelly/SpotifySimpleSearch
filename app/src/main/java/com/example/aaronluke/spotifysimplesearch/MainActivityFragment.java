@@ -26,21 +26,31 @@ import java.util.List;
  */
 public class MainActivityFragment extends Fragment {
 
+    // list of Artists
+    // TODO: create array list of artist, artist ID, artist image, etc
+    private ArrayList<String> artistList;
+
+    // Adapter to tie the data to the listview
+    private ArrayAdapter<String> mArtistAdapter;
+
     public MainActivityFragment() {
     }
+
+    // TODO: need an oncreate for non-visual elements- move out of onCreateView()
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        // Adapter to tie the data to the listview
-        ArrayAdapter<String> mArtistAdapter;
+        // allocate array list
+        artistList= new ArrayList();
 
-        // Static Lookup for Artist Name
-        List<String> artistList= Arrays.asList("No Matching Artist");
-        artistList= performArtistSearch("Keith");
+        // perform artist search and add to artistStringList
+        // TODO: pass in from text box instead of static
+        performArtistSearch("Keith");
 
-        // populating adapter with current activity, layout ID, id of textview, and the string data
+        // populatin
+        // g adapter with current activity, layout ID, id of textview, and the string data
         mArtistAdapter =
                 new ArrayAdapter<>(
                         getActivity(),
@@ -60,16 +70,13 @@ public class MainActivityFragment extends Fragment {
     }
 
     // method to search for Artist
-    private List<String> performArtistSearch (String query) {
+    private void performArtistSearch (String query) {
 
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
 
         // getting pointer to resources- will pull strings, views from this
-        Resources res = getResources();
-
-        // creating string list based on temp_list_items out of strings.xml for the moment
-        List<String> listofArtists = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.temp_list_items)));
+        // Resources res = getResources();
 
         spotify.searchArtists(query, new Callback<ArtistsPager>() {
             @Override
@@ -78,10 +85,13 @@ public class MainActivityFragment extends Fragment {
                 // grab all artists that match
                 List<Artist> listOfArtists = artistsPager.artists.items;
 
+                // cycle through artist list names to add to artistStringList
                 for(Artist element : listOfArtists){
-                    listofArtists[element]= = element.name;
-                    Log.d("Name", name);
+                    artistList.add(element.name);
+                    Log.d("Name", element.name);
                 }
+
+                // notify adapter that data changed via notifyDataSetchange
 
                 Log.d("artist success", artistsPager.toString());
 
@@ -94,10 +104,9 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        return listofArtists;
     }
 
-    // TODO: At some point I need to implement a call back for the text editor
+    // TODO: need to implement a call back for the text editor
     // onEditorActionListener(new TextView.OnEditorActionListener()
 
 
