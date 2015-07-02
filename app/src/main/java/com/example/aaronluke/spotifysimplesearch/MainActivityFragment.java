@@ -9,9 +9,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.EditText;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import java.io.IOException;
 import android.widget.Toast;
+import android.content.Context;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
@@ -21,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: remove once doen: from old design- keeping around "just in case"
-import android.content.Context;
+
 import android.content.res.Resources;
 import retrofit.Callback;
 import retrofit.client.Response;
@@ -60,10 +63,27 @@ public class MainActivityFragment extends Fragment {
         // TODO: pass in from text box instead of static
 
         // get reference to artist input box
-        EditText inputArtistBox = (EditText) rootView.findViewById(R.id.artist_name_input);
+        final EditText inputArtistBox = (EditText) rootView.findViewById(R.id.artist_name_input);
 
-        // perform artist search and add to artistStringList in background
-        new performArtistSearch().execute("Sara");
+        inputArtistBox.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                // clearing artistList for repopulation
+                artistList.clear();
+
+                // perform artist search and add to artistStringList in background
+                new populateArtistSearch().execute(inputArtistBox.getText().toString());
+
+                // notify adapter that data set has changed and needs to grab this
+                mArtistAdapter.notifyDataSetChanged();
+
+                // was trying to hide keyboard
+                // hideKeyboard();
+
+            }
+        });
 
         // populating adapter with current activity, layout ID, id of textview, and the string data
         mArtistAdapter =
@@ -77,13 +97,23 @@ public class MainActivityFragment extends Fragment {
         ListView listView = (ListView) rootView.findViewById(R.id.artist_list_view);
         listView.setAdapter(mArtistAdapter);
 
+        // finish();
+        // startActivity(getIntent());
+
         // returning rootView that now has adapter in place
         return rootView;
     }
 
-    // method to search for Artist
-    public class performArtistSearch extends AsyncTask<String, Void, Void> {
+    private void hideKeyboard() {
+        View view = this.getView();
+        if (view != null) {
+            InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
 
+    // method to search for Artist
+    public class populateArtistSearch extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... params) {
@@ -101,8 +131,19 @@ public class MainActivityFragment extends Fragment {
 
             // cycle through artist list names to add to artistStringList
             for (Artist element : listOfArtists) {
+
+                // add name to artistList
                 artistList.add(element.name);
+
+                // logging for debug purposes
                 Log.d("Name", element.name);
+
+                // TODO: need to grab and display image
+                // element.id;
+
+                // logging for debug purposes
+                Log.d("id", element.id);
+
             }
 
             // Log success
@@ -113,6 +154,8 @@ public class MainActivityFragment extends Fragment {
 
             return null;
 
+
+
             //} catch (IOException e) {
 
             //Log.d("artist failure",);
@@ -121,10 +164,6 @@ public class MainActivityFragment extends Fragment {
             //}
 
         }
-
-        // TODO: need to implement a call back for the text editor
-        // onEditorActionListener(new TextView.OnEditorActionListener()
-
 
     }
 }
