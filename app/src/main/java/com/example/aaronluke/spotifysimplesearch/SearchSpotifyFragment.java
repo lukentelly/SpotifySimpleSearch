@@ -22,8 +22,8 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
-
-// TODO: remove once doen: from old design- keeping around "just in case"
+import android.widget.Toast;
+import android.widget.AdapterView;
 
 
 // TODO: will need to make fragment for second screen and switch them
@@ -31,15 +31,13 @@ import java.util.List;
 // Fragment for Main Screen
 public class SearchSpotifyFragment extends Fragment {
 
-    // list of Artists
-    // TODO: create array list of artist, artist ID, artist image, etc
+    // TODO: refactor array list to include artist, artist ID, artist image, etc
     private ArrayList<String> artistList;
-
+    private ListView listView;
+    private View rootView;
     private ViewGroup myContainer;
-
     private LayoutInflater myInflater;
-
-    // Adapter to tie the data to the listview
+    private EditText inputArtistBox;
     private ArrayAdapter<String> mArtistAdapter;
 
     public SearchSpotifyFragment() {
@@ -50,7 +48,6 @@ public class SearchSpotifyFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
         setHasOptionsMenu(true);
 
     }
@@ -77,29 +74,25 @@ public class SearchSpotifyFragment extends Fragment {
         myInflater= inflater;
 
         // grabbing rootView to manipulate
-        View rootView = myInflater.inflate(R.layout.search_spotify_fragment_main, myContainer, false);
+        rootView = myInflater.inflate(R.layout.search_spotify_fragment_main, myContainer, false);
 
         // TODO: pass in from text box instead of static
 
         // get reference to artist input box
-        final EditText inputArtistBox = (EditText) rootView.findViewById(R.id.artist_name_input);
+        inputArtistBox = (EditText) rootView.findViewById(R.id.artist_name_input);
 
+        // set onclick listener to identify when the user his hit enter or clicked on box
         inputArtistBox.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
-                // clearing artistList for repopulation
-                artistList.clear();
+                // pop up toast to note what artist we are searching for
+                Toast toast= Toast.makeText(rootView.getContext(), inputArtistBox.getText().toString(), Toast.LENGTH_SHORT);
+                toast.show();
 
                 // perform artist search and add to artistStringList in background
                 new populateArtistSearch().execute(inputArtistBox.getText().toString());
-
-                // notify adapter that data set has changed and needs to grab this
-                mArtistAdapter.notifyDataSetChanged();
-
-                // was trying to hide keyboard
-                // hideKeyboard();
 
             }
         });
@@ -113,11 +106,25 @@ public class SearchSpotifyFragment extends Fragment {
                         artistList);
 
         // retrieving a reference to the ListView, and attach this adapter to it.
-        ListView listView = (ListView) rootView.findViewById(R.id.artist_list_view);
+        listView = (ListView) rootView.findViewById(R.id.artist_list_view);
         listView.setAdapter(mArtistAdapter);
 
-        // finish();
-        // startActivity(getIntent());
+
+        // set onclick listener to identify when the user his hit enter or clicked on box
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                // pop up what the artist was that was selected
+                Toast toast= Toast.makeText(rootView.getContext(), mArtistAdapter.getItem(position), Toast.LENGTH_SHORT);
+                toast.show();
+
+                // TODO: Create new Fragment and populate with top 10
+
+
+            }
+        });
 
         // returning rootView that now has adapter in place
         return rootView;
@@ -125,9 +132,6 @@ public class SearchSpotifyFragment extends Fragment {
 
     // when menu item selected, do this
     private void onOptionsItemSelected(){
-
-
-
     }
 
     private void hideKeyboard() {
@@ -155,6 +159,9 @@ public class SearchSpotifyFragment extends Fragment {
             // grab all artists that match
             List<Artist> listOfArtists = artistsPager.artists.items;
 
+            // clearing artistList for repopulation
+            artistList.clear();
+
             // cycle through artist list names to add to artistStringList
             for (Artist element : listOfArtists) {
 
@@ -164,7 +171,7 @@ public class SearchSpotifyFragment extends Fragment {
                 // logging for debug purposes
                 Log.d("Name", element.name);
 
-                // TODO: need to grab and display image
+                // TODO: need to grab and add image
                 // element.id;
 
                 // logging for debug purposes
@@ -173,7 +180,7 @@ public class SearchSpotifyFragment extends Fragment {
             }
 
             // Log success
-            Log.d("artist success", artistsPager.toString());
+            Log.v("artist success", artistsPager.toString());
 
             // Todo: pop up toast to declare success
             // Toast.makeText(getApplicationContext(), "Artist(s) Found!", Toast.LENGTH_SHORT).show();
@@ -181,11 +188,10 @@ public class SearchSpotifyFragment extends Fragment {
             return null;
 
 
-
             //} catch (IOException e) {
 
             //Log.d("artist failure",);
-            // Todo: pop up toast to declare success
+            // Todo: pop up toast to declare failure
             //oast.makeText(getView().getContext(), "Artist Not Found", Toast.LENGTH_SHORT).show();
             //}
 
