@@ -13,4 +13,5 @@
         <item>seven</item>
         <item>eight</item>
     </string-array>
+    <string name="title_activity_top_ten">TopTenActivity</string>
 </resources>

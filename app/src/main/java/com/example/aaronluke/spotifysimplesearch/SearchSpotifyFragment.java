@@ -23,6 +23,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import android.widget.Toast;
+import android.content.Intent;
 import android.widget.AdapterView;
 
 
@@ -39,6 +40,7 @@ public class SearchSpotifyFragment extends Fragment {
     private LayoutInflater myInflater;
     private EditText inputArtistBox;
     private ArrayAdapter<String> mArtistAdapter;
+    private Boolean mSearchSuccess;
 
     public SearchSpotifyFragment() {
     }
@@ -73,6 +75,8 @@ public class SearchSpotifyFragment extends Fragment {
 
         myInflater= inflater;
 
+        mSearchSuccess= Boolean.TRUE;
+
         // grabbing rootView to manipulate
         rootView = myInflater.inflate(R.layout.search_spotify_fragment_main, myContainer, false);
 
@@ -81,19 +85,26 @@ public class SearchSpotifyFragment extends Fragment {
         // get reference to artist input box
         inputArtistBox = (EditText) rootView.findViewById(R.id.artist_name_input);
 
-        // set onclick listener to identify when the user his hit enter or clicked on box
+        // IN INPUT BOX  identify when the user his hit enter or clicked on box
         inputArtistBox.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
-                // pop up toast to note what artist we are searching for
-                Toast toast= Toast.makeText(rootView.getContext(), inputArtistBox.getText().toString(), Toast.LENGTH_SHORT);
-                toast.show();
-
                 // perform artist search and add to artistStringList in background
                 new populateArtistSearch().execute(inputArtistBox.getText().toString());
 
+                String popUp;
+
+                if (mSearchSuccess) {
+                    popUp= inputArtistBox.getText().toString();
+                }
+                else {
+                    popUp= "No Artist by that Name";
+                }
+
+                Toast toast = Toast.makeText(rootView.getContext(), popUp , Toast.LENGTH_SHORT);
+                toast.show();
             }
         });
 
@@ -110,7 +121,7 @@ public class SearchSpotifyFragment extends Fragment {
         listView.setAdapter(mArtistAdapter);
 
 
-        // set onclick listener to identify when the user his hit enter or clicked on box
+        // IN LISTVIEW monitor clicks to identify which item was selected
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -121,7 +132,9 @@ public class SearchSpotifyFragment extends Fragment {
                 toast.show();
 
                 // TODO: Create new Fragment and populate with top 10
-
+                Intent intent = new Intent(getActivity(), TopTenActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, mArtistAdapter.getItem(position));
+                startActivity(intent);
 
             }
         });
@@ -148,8 +161,13 @@ public class SearchSpotifyFragment extends Fragment {
         @Override
         protected Void doInBackground(String... params) {
 
-            // TODO: implement try/catch
-            //try {
+
+            // check to see if there is anything
+            if (params.length == 0) {
+
+                return null;
+            }
+
             String query = params[0];
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
@@ -162,38 +180,41 @@ public class SearchSpotifyFragment extends Fragment {
             // clearing artistList for repopulation
             artistList.clear();
 
-            // cycle through artist list names to add to artistStringList
-            for (Artist element : listOfArtists) {
+            if (listOfArtists.isEmpty()) {
 
-                // add name to artistList
-                artistList.add(element.name);
-
-                // logging for debug purposes
-                Log.d("Name", element.name);
-
-                // TODO: need to grab and add image
-                // element.id;
+                // set to show we were unsuccessful
+                mSearchSuccess= Boolean.FALSE;
 
                 // logging for debug purposes
-                Log.d("id", element.id);
+                Log.v("list_false", "list of Artists returned false");
 
-            }
+                return null;
 
-            // Log success
-            Log.v("artist success", artistsPager.toString());
+                }
 
-            // Todo: pop up toast to declare success
-            // Toast.makeText(getApplicationContext(), "Artist(s) Found!", Toast.LENGTH_SHORT).show();
+                // cycle through artist list names to add to artistStringList
+                for (Artist element : listOfArtists) {
+
+                    // add name to artistList
+                    artistList.add(element.name);
+
+                    // logging for debug purposes
+                    Log.v("Name", element.name);
+
+                    // TODO: need to grab and add image
+                    // element.id;
+
+                    // logging for debug purposes
+                    Log.v("id", element.id);
+
+                }
+
+                // Log success
+                Log.v("artist success", artistsPager.toString());
+
+            mSearchSuccess= Boolean.TRUE;
 
             return null;
-
-
-            //} catch (IOException e) {
-
-            //Log.d("artist failure",);
-            // Todo: pop up toast to declare failure
-            //oast.makeText(getView().getContext(), "Artist Not Found", Toast.LENGTH_SHORT).show();
-            //}
 
         }
 
@@ -201,6 +222,7 @@ public class SearchSpotifyFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
+            // mToast.show();
 
         }
     }
