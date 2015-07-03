@@ -69,7 +69,7 @@ public class SearchSpotifyFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         // allocate array list
-        artistList = ArrayList();
+        artistList = new ArrayList();
 
         // saving off container for us in other methods
         myContainer= container;
