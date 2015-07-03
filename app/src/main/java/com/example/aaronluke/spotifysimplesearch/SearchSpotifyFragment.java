@@ -5,6 +5,8 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.EditText;
@@ -12,8 +14,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-import java.io.IOException;
-import android.widget.Toast;
 import android.content.Context;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
@@ -25,27 +25,41 @@ import java.util.List;
 
 // TODO: remove once doen: from old design- keeping around "just in case"
 
-import android.content.res.Resources;
-import retrofit.Callback;
-import retrofit.client.Response;
-import retrofit.RetrofitError;
 
 // TODO: will need to make fragment for second screen and switch them
 
 // Fragment for Main Screen
-public class MainActivityFragment extends Fragment {
+public class SearchSpotifyFragment extends Fragment {
 
     // list of Artists
     // TODO: create array list of artist, artist ID, artist image, etc
     private ArrayList<String> artistList;
 
+    private ViewGroup myContainer;
+
+    private LayoutInflater myInflater;
+
     // Adapter to tie the data to the listview
     private ArrayAdapter<String> mArtistAdapter;
 
-    public MainActivityFragment() {
+    public SearchSpotifyFragment() {
     }
 
-    // TODO: need an oncreate for non-visual elements- move out of onCreateView()
+    // TODO: need to move non-visual elements- move out of onCreateView()
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_main, menu);
+        }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -55,10 +69,15 @@ public class MainActivityFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         // allocate array list
-        artistList = new ArrayList();
+        artistList = ArrayList();
+
+        // saving off container for us in other methods
+        myContainer= container;
+
+        myInflater= inflater;
 
         // grabbing rootView to manipulate
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = myInflater.inflate(R.layout.search_spotify_fragment_main, myContainer, false);
 
         // TODO: pass in from text box instead of static
 
@@ -102,6 +121,13 @@ public class MainActivityFragment extends Fragment {
 
         // returning rootView that now has adapter in place
         return rootView;
+    }
+
+    // when menu item selected, do this
+    private void onOptionsItemSelected(){
+
+
+
     }
 
     private void hideKeyboard() {
@@ -165,5 +191,11 @@ public class MainActivityFragment extends Fragment {
 
         }
 
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+
+        }
     }
 }
